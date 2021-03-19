@@ -7,7 +7,8 @@ import (
 	"time"
 
 	"encoding/json"
-	"os"
+	"encoding/xml"
+        "os"
 	"syscall"
 
 	"github.com/golang/protobuf/proto"
@@ -156,6 +157,11 @@ func subSendAndReceive(conn *grpc.ClientConn, jctx *JCtx,
 			rtime := time.Now()
 			if *outJSON {
 				if b, err := json.MarshalIndent(ocData, "", "  "); err == nil {
+					jLog(jctx, fmt.Sprintf("%s\n", b))
+				}
+			}
+			if *outXML {
+				if b, err := xml.MarshalIndent(ocData, "", "  "); err == nil {
 					jLog(jctx, fmt.Sprintf("%s\n", b))
 				}
 			}
