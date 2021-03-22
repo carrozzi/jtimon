@@ -23,6 +23,8 @@ clean: ## clean the build
 
 LDFLAGS=--ldflags="-X main.jtimonVersion=${TAG}-${COMMIT}-${BRANCH} -X main.buildTime=${TIME}"
 
+junos: ## generate a linux version of the binary
+	GOOS=freebsd GOARCH=386 go build ${LDFLAGS} -o ${BINARY}-junos-${GOARCH} .
 linux: ## generate a linux version of the binary
 	GOOS=linux GOARCH=${GOARCH} go build ${LDFLAGS} -o ${BINARY}-linux-${GOARCH} .
 

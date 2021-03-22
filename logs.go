@@ -25,6 +25,17 @@ func logStop(jctx *JCtx) {
 		jctx.config.Log.out = nil
 		jctx.config.Log.logger = nil
 	}
+	if jctx.config.Jsonfile != nil {
+		if jctx.config.Jsonfile != os.Stdout {
+			var curpos int64
+			curpos, _ = jctx.config.Jsonfile.Seek(-2, 1)
+			fmt.Println(curpos)
+			//fmt.Println("Did a seek on json file")
+			jctx.config.Jsonfile.WriteString("]")
+			jctx.config.Jsonfile.Close()
+		}
+		jctx.config.Jsonfile = nil
+	}
 }
 func logInit(jctx *JCtx) {
 	if *logMux {
@@ -32,7 +43,9 @@ func logInit(jctx *JCtx) {
 	}
 
 	file := jctx.config.Log.File
+
 	var out *os.File
+	var jsout *os.File
 
 	if *print {
 		out = os.Stdout
@@ -46,7 +59,15 @@ func logInit(jctx *JCtx) {
 			log.Printf("Could not create log file(%s): %v\n", file, err)
 		}
 	}
-
+	if *jsonFile != "" {
+		var err error
+		jsout, err = os.OpenFile(*jsonFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
+		if err != nil {
+			log.Printf("Could not create JSON file(%s): %v\n", file, err)
+		}
+		jsout.WriteString("[")
+		jctx.config.Jsonfile = jsout
+	}
 	if out != nil {
 		flags := 0
 

@@ -31,9 +31,10 @@ type Config struct {
 	Influx          InfluxConfig  `json:"influx"`
 	Paths           []PathsConfig `json:"paths"`
 	Log             LogConfig     `json:"log"`
-	Vendor          VendorConfig  `json:"vendor"`
-	Alias           string        `json:"alias"`
-	PasswordDecoder string        `json:"password-decoder"`
+	Jsonfile        *os.File
+	Vendor          VendorConfig `json:"vendor"`
+	Alias           string       `json:"alias"`
+	PasswordDecoder string       `json:"password-decoder"`
 }
 
 // GnmiConfig definition

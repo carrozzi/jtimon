@@ -8,7 +8,7 @@ import (
 
 	"encoding/json"
 	"encoding/xml"
-        "os"
+	"os"
 	"syscall"
 
 	"github.com/golang/protobuf/proto"
@@ -156,8 +156,15 @@ func subSendAndReceive(conn *grpc.ClientConn, jctx *JCtx,
 
 			rtime := time.Now()
 			if *outJSON {
-				if b, err := json.MarshalIndent(ocData, "", "  "); err == nil {
-					jLog(jctx, fmt.Sprintf("%s\n", b))
+				if jctx.config.Jsonfile != nil {
+					if b, err := json.MarshalIndent(ocData, "", "  "); err == nil {
+						jctx.config.Jsonfile.WriteString(fmt.Sprintf("%s,\n", b))
+					}
+
+				} else {
+					if b, err := json.MarshalIndent(ocData, "", "  "); err == nil {
+						jLog(jctx, fmt.Sprintf("%s\n", b))
+					}
 				}
 			}
 			if *outXML {
