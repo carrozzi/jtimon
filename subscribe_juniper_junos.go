@@ -41,7 +41,7 @@ func handleOnePacket(ocData *na_pb.OpenConfigData, jctx *JCtx) {
 		s += fmt.Sprintf("sub_component_id: %d\n", ocData.SubComponentId)
 		s += fmt.Sprintf("path: %s\n", ocData.Path)
 		s += fmt.Sprintf("sequence_number: %d\n", ocData.SequenceNumber)
-		s += fmt.Sprintf("timestamp: %d\n", ocData.Timestamp)
+		s += fmt.Sprintf("timestamp: %s\n", time.Unix(int64(ocData.Timestamp)/1000, 0))
 		s += fmt.Sprintf("sync_response: %v\n", ocData.SyncResponse)
 		if ocData.SyncResponse {
 			s += "Received sync_response\n"
@@ -54,33 +54,39 @@ func handleOnePacket(ocData *na_pb.OpenConfigData, jctx *JCtx) {
 	}
 
 	prefixSeen := false
+	var prefix = ""
 	for _, kv := range ocData.Kv {
 		updateStatsKV(jctx, true, 1)
 
 		if *print || (IsVerboseLogging(jctx) && !*print) {
-			s += fmt.Sprintf("  key: %s\n", kv.Key)
-			switch value := kv.Value.(type) {
-			case *na_pb.KeyValue_DoubleValue:
-				s += fmt.Sprintf("  double_value: %v\n", value.DoubleValue)
-			case *na_pb.KeyValue_IntValue:
-				s += fmt.Sprintf("  int_value: %d\n", value.IntValue)
-			case *na_pb.KeyValue_UintValue:
-				s += fmt.Sprintf("  uint_value: %d\n", value.UintValue)
-			case *na_pb.KeyValue_SintValue:
-				s += fmt.Sprintf("  sint_value: %d\n", value.SintValue)
-			case *na_pb.KeyValue_BoolValue:
-				s += fmt.Sprintf("  bool_value: %v\n", value.BoolValue)
-			case *na_pb.KeyValue_StrValue:
-				s += fmt.Sprintf("  str_value: %s\n", value.StrValue)
-			case *na_pb.KeyValue_BytesValue:
-				s += fmt.Sprintf("  bytes_value: %s\n", value.BytesValue)
-			default:
-				s += fmt.Sprintf("  default: %v\n", value)
+			if kv.Key != "__prefix__" {
+				s += fmt.Sprintf("  %s%s :", prefix, kv.Key)
+				switch value := kv.Value.(type) {
+				case *na_pb.KeyValue_DoubleValue:
+					s += fmt.Sprintf(" %v\n", value.DoubleValue)
+				case *na_pb.KeyValue_IntValue:
+					s += fmt.Sprintf(" %d\n", value.IntValue)
+				case *na_pb.KeyValue_UintValue:
+					s += fmt.Sprintf(" %d\n", value.UintValue)
+				case *na_pb.KeyValue_SintValue:
+					s += fmt.Sprintf(" %d\n", value.SintValue)
+				case *na_pb.KeyValue_BoolValue:
+					s += fmt.Sprintf(" %v\n", value.BoolValue)
+				case *na_pb.KeyValue_StrValue:
+					s += fmt.Sprintf(" %s\n", value.StrValue)
+				case *na_pb.KeyValue_BytesValue:
+					s += fmt.Sprintf(" %s\n", value.BytesValue)
+				case *na_pb.KeyValue_FloatValue:
+					s += fmt.Sprintf(" %v\n", value.FloatValue)
+				default:
+					s += fmt.Sprintf(" %v\n", value)
+				}
 			}
 		}
 
 		if kv.Key == "__prefix__" {
 			prefixSeen = true
+			prefix = kv.GetStrValue()
 		} else if !strings.HasPrefix(kv.Key, "__") {
 			if !prefixSeen && !strings.HasPrefix(kv.Key, "/") {
 				if *prefixCheck {
