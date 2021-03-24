@@ -5,6 +5,7 @@ jtimon-linux-amd64
 *.log
 *.logs
 .*
+*.json
 debug.test
 jtimon-windows-amd64.exe
 coverage.out
